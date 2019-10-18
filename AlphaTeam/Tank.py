@@ -17,7 +17,7 @@ class Tank:
     cur_x = 0
     cur_y = 0
 
-    def __init__(self, Team, Name, ServerDeetz):
+    def __init__(self, ServerDeetz, Team, Name):
         self.name = Team + ":" + Name
         self.GameServer = ServerComms(ServerDeetz.hostname, ServerDeetz.port)
         # Spawn our tank
@@ -25,7 +25,7 @@ class Tank:
         self.GameServer.sendMessage(
             ServerMessageTypes.CREATETANK, {'Name': self.name})
 
-    def evalChance(HDat, ODat):
+    def evalChance(self, HDat, ODat):
         HHealth = HDat["Health"]
         OHealth = ODat["Health"]
 
@@ -39,13 +39,12 @@ class Tank:
         else:
             return(True)
 
-    def goGoals(self, cur_x, cur_y):
-        print("AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-        targ_x = 0
-        if getDistance(cur_x, cur_y, 0, 100) > 122:
-            targ_y = -100
+    def goGoals(self):
+        self.targ_x = 0
+        if getDistance(self.cur_x, self.cur_y, 0, 100) > 122:
+            self.targ_y = -100
         else:
-            targ_y = 100
+            self.targ_y = 100
 
     def update(self):
         data = self.GameServer.readMessage()
@@ -56,62 +55,61 @@ class Tank:
             if(len(data) > 1):
                 print(data)
                 if (data["Name"] == self.name):
-                    HiveID = data["Id"]
+                    self.HiveID = data["Id"]
                     self.cur_x = data["X"]
                     self.cur_y = data["Y"]
                     self.ammo = data["Ammo"]
                     self.health = data["Health"]
-                    if(cur_y > 100 or cur_y < -100):
-                        print("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB")
-                        bank = False
+                    if(self.cur_y > 100 or self.cur_y < -100):
+                        self.bank = False
 
-                if len(data) == 1 and data["Id"] == HiveID:
+                if len(data) == 1 and data["Id"] == self.HiveID:
                     self.GameServer.sendMessage(ServerMessageTypes.TURNTOHEADING, {
                         'Amount': getAng(self.cur_x, self.cur_y, 0, 100)})
                     self.targ_x = 0
                     self.targ_y = 0
-                if not(nearest_enemy == 0):
-                    if nearest_enemy["Health"] == 0:
+                if not(self.nearest_enemy == 0):
+                    if self.nearest_enemy["Health"] == 0:
                         print("HERERERERERERERERERRERERERERERERERER")
-                        bank = True
-                        nearest_enemy["Health"] = 5
+                        self.bank = True
+                        self.nearest_enemy["Health"] = 5
                         GameServer.sendMessage(ServerMessageTypes.TURNTOHEADING, {
-                            'Amount': getAng(cur_x, cur_y, 0, 100)})
-                        targ_x = 0
-                        targ_y = 0
-                if data["Type"] == "Tank" and not(data["Name"] == "HIVEbot"):
-                    if not((nearest_enemy) == 0):
-                        if getDistance(cur_x, cur_y, nearest_enemy["X"], nearest_enemy["X"]) > getDistance(cur_x, cur_y, data["X"], data["Y"]):
-                            nearest_enemy = data
+                            'Amount': getAng(self.cur_x, self.cur_y, 0, 100)})
+                        self.targ_x = 0
+                        self.targ_y = 0
+                if data["Type"] == "Tank" and not(data["Name"] == self.name):
+                    if not((self.nearest_enemy) == 0):
+                        if getDistance(self.cur_x, self.cur_y, self.nearest_enemy["X"], self.nearest_enemy["Y"]) > getDistance(self.cur_x, self.cur_y, data["X"], data["Y"]):
+                            self.nearest_enemy = data
                     else:
-                        nearest_enemy = data
+                        self.nearest_enemy = data
                 if data["Type"] == "AmmoPickup":
-                    nearestAPack[0] = (data["X"])
-                    nearestAPack[1] = (data["Y"])
-                    print(nearestAPack)
+                    self.nearestAPack[0] = (data["X"])
+                    self.nearestAPack[1] = (data["Y"])
+                    print(self.nearestAPack)
                 if data["Type"] == "HealthPickup":
-                    nearestHPack[0] = (data["X"])
-                    nearestHPack[1] = (data["Y"])
+                    self.nearestHPack[0] = (data["X"])
+                    self.nearestHPack[1] = (data["Y"])
 
-        if bank == True:
+        if self.bank == True:
             self.GameServer.sendMessage(ServerMessageTypes.TURNTOHEADING, {
                 'Amount': getAng(self.cur_x, self.cur_y, 0, 100)})
-            self.goGoals(cur_x, cur_y)
+            self.goGoals()
         else:
-            if ammo < 4 and health > 1:
-                if len(nearestAPack) > 0:
-                    targ_x = nearestAPack[0]
-                    targ_y = nearestAPack[1]
-            elif not(nearest_enemy == 0):
-                if evalChance({"Health": health, "Ammo": ammo}, nearest_enemy):
-                    targ_x = nearest_enemy["X"]
-                    targ_y = nearest_enemy["Y"]
+            if self.ammo < 4 and self.health > 1:
+                if len(self.nearestAPack) > 0:
+                    self.targ_x = self.nearestAPack[0]
+                    self.targ_y = self.nearestAPack[1]
+            elif not(self.nearest_enemy == 0):
+                if self.evalChance({"Health": self.health, "Ammo": self.ammo}, self.nearest_enemy):
+                    self.targ_x = self.nearest_enemy["X"]
+                    self.targ_y = self.nearest_enemy["Y"]
             else:
-                if len(nearestHPack) > 0:
-                    targ_x = nearestHPack[0]
-                    targ_y = nearestHPack[1]
-        print(targ_x, targ_y)
+                if len(self.nearestHPack) > 0:
+                    self.targ_x = self.nearestHPack[0]
+                    self.targ_y = self.nearestHPack[1]
+        print(self.targ_x, self.targ_y)
 
         self.GameServer.sendMessage(ServerMessageTypes.TURNTOHEADING, {
-            'Amount': getAng(cur_x, cur_y, targ_x, targ_y)})
+            'Amount': getAng(self.cur_x, self.cur_y, self.targ_x, self.targ_y)})
         self.GameServer.sendMessage(ServerMessageTypes.FIRE)

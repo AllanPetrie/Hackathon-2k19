@@ -34,13 +34,3 @@ team = Team(ServerDeetz, "Alpha", ["Cheeky", "Absolute", "Gary", "Fish"])
 
 while True:
 	team.update()
-
-
-
-
-
-
-	
-
-
-    
