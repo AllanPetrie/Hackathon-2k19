@@ -1,5 +1,5 @@
 
-'Do You Have the GUTS? 2019'
+'DO YOU HAVE THE GUTS? 2019'
 
 Attempting tank challenge by Morgan Stanley.
 
@@ -10,7 +10,10 @@ Standing on the shoulders of: Sam George, Gregor Kerr, Matthew O'Hare, Nathan St
 OFFICIAL TANK NAMES
 --
 Gary (Tank) Commander
+
 Fish (Tank)
+
 Absolute (Tank)
+
 Thomas (Tank)
 --
