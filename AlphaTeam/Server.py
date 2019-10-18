@@ -79,6 +79,11 @@ class ServerMessageTypes(object):
 			return "??UNKNOWN??"
 
 
+class GameServerDetails:
+	def __init__(self, hostname = "0.0.0.0", port = 8052):
+		self.hostname = hostname
+		self.port = port
+
 class ServerComms(object):
 	'''
 	TCP comms handler
