@@ -23,7 +23,7 @@ args = parser.parse_args()
 
 # Set up console logging
 if args.debug:
-	logging.basicConfig(format='[%(asctime)s] %(message)s', level=logging.DEBUG)
+        logging.basicConfig(format='[%(asctime)s] %(message)s', level=logging.DEBUG)
 else:
 	logging.basicConfig(format='[%(asctime)s] %(message)s', level=logging.INFO)
 
@@ -92,38 +92,33 @@ while True:
         data = GameServer.readMessage() 
         GameServer.sendMessage(ServerMessageTypes.TOGGLEFORWARD)
 
-        if not(data == None):
+        if data and len(data)>1) and data["Name"] == "HIVEbot":
                 print(data)
-                if(len(data)>1):
-                        print(data)
-                        if (data["Name"] == "HIVEbot"):
-                                HiveID = data["Id"]
-                                cur_x= data["X"]
-                                cur_y = data["Y"]
-                                ammo = data["Ammo"]
-                                health = data["Health"]
-                                if(cur_y> 100 or cur_y<-100):
-                                        print("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB")
-                                        bank = False
-                                
-                        if len(data) == 1 and data["Id"] == HiveID:
+                HiveID = data["Id"]
+                cur_x= data["X"]
+                cur_y = data["Y"]
+                ammo = data["Ammo"]
+                health = data["Health"]
+                if(cur_y> 100 or cur_y<-100):
+                        print("BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB")
+                        bank = False
+        
+                if len(data) == 1 and data["Id"] == HiveID:
+                        GameServer.sendMessage(ServerMessageTypes.TURNTOHEADING,{'Amount':getAng(cur_x,cur_y,0,100)})
+                        time.sleep(15)
+                        targ_x = 0
+                        targ_y = 0
+                        if not(nearest_enemy == 0) and if nearest_enemy["Health"] == 0:
+                                print("HERERERERERERERERERRERERERERERERERER")
+                                bank = True
+                                nearest_enemy["Health"] = 5
                                 GameServer.sendMessage(ServerMessageTypes.TURNTOHEADING,{'Amount':getAng(cur_x,cur_y,0,100)})
                                 time.sleep(15)
                                 targ_x = 0
                                 targ_y = 0
-                        if not(nearest_enemy == 0):
-                                if nearest_enemy["Health"] == 0:
-                                        print("HERERERERERERERERERRERERERERERERERER")
-                                        bank = True
-                                        nearest_enemy["Health"] = 5
-                                        GameServer.sendMessage(ServerMessageTypes.TURNTOHEADING,{'Amount':getAng(cur_x,cur_y,0,100)})
-                                        time.sleep(15)
-                                        targ_x = 0
-                                        targ_y = 0
-                        if data["Type"] == "Tank" and not(data["Name"] == "HIVEbot"):
-                                if not((nearest_enemy) == 0):
-                                        if getDistance(cur_x,cur_y,nearest_enemy["X"],nearest_enemy["X"])>getDistance(cur_x,cur_y,data["X"],data["Y"]):
-                                                nearest_enemy = data
+                        if data["Type"] == "Tank" not(data["Name"] == "HIVEbot" or nearest_enemy == 0):
+                                if getDistance(cur_x,cur_y,nearest_enemy["X"],nearest_enemy["X"])>getDistance(cur_x,cur_y,data["X"],data["Y"]):
+                                        nearest_enemy = data
                                 else:
                                         nearest_enemy = data
                         if data["Type"] == "AmmoPickup":
