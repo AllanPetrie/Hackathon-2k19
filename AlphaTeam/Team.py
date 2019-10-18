@@ -1,7 +1,7 @@
 from Tank import *
 
 class Team:
-
+	
 	tanks = []
 
 	def __init__(self, servDeetz, teamName, tankNames):
