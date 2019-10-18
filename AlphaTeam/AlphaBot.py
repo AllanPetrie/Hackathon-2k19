@@ -28,10 +28,6 @@ if args.debug:
 else:
 	logging.basicConfig(format='[%(asctime)s] %(message)s', level=logging.INFO)
 
-<<<<<<< HEAD
-# Connect to game server
-=======
->>>>>>> a924e0971f1f75c319b2919085f15743b5caed3c
 ServerDeetz = GameServerDetails(args.hostname, args.port)
 
 team = Team(ServerDeetz, "Alpha", ["Cheeky", "Absolute", "Gary", "Fish"])
