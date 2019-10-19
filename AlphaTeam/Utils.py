@@ -7,6 +7,7 @@ def getDistance(p1,p2):
 
 def getAng(p1,p2):
         t1 = math.atan2(p2[1]-p1[1], p2[0]-p1[0])
-        t1 = (t1*180)/math.pi
+        t1 = t1*(180/math.pi)
         t1 = (t1-360)%360
         return(360-t1)
+

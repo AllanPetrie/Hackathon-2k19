@@ -48,12 +48,11 @@ class Tank:
         return self.GameServer.readMessage()
 
     def goGoals(self):
-        self.turnTo(0,100)
-        self.target[0] = 0
         if getDistance(self.pos, p2=(0, 100)) > 122:
-            self.target[1] = -100
+            self.target = (0, -100)
         else:
-            self.target[1] = 100
+            self.target[1] = (0, 100)
+        self.turnTo(target)
 
     def updateNearestEnemy(self, data):
         if self.nearest_enemy != 0:
@@ -75,10 +74,20 @@ class Tank:
 
     #turns bot to point towards x,y
     def turnTo(self, point):
+
         self.GameServer.sendMessage(ServerMessageTypes.TURNTOHEADING,
             {
                 'Amount': getAng(self.pos, point)
             })
+
+    #will select the target
+    def selectTarget(self):
+        if self.ammo < 4 and self.health > 1 and len(self.nearestAPack) > 0:
+            self.target = self.nearestAPack
+        elif self.nearest_enemy != 0 and self.evalChance({"Health": self.health, "Ammo": self.ammo}, self.nearest_enemy):
+            self.target = self.nearest_enemy
+        elif len(self.nearestHPack) > 0:
+            self.target = self.nearestHPack
 
     def setState(self, state):
         if state not in self.STATES:
@@ -112,18 +121,16 @@ class Tank:
 
             if data["Type"] == "Tank" and not(data["Name"].startswith('Alpha:')):
                 self.updateNearestEnemy(data)
-
             if data["Type"] == "AmmoPickup":
                 self.nearestAPack = (data["X"], data["Y"])
-
             if data["Type"] == "HealthPickup":
-                self.nearestHPack = (data["X"], data["Y"])
+                self.nearestHPack = (data["X"], data["Y"]
 
-            if self.state == 'BANK':
-                self.goGoals()
-            else:
-                self.pickTarget()
-
+        if self.state == 'BANK':
+            self.turnTo(0,100)
+            self.goGoals()
+        else:
+            self.selectTarget()
 
             self.turnTo(self.target)
             self.shoot()
