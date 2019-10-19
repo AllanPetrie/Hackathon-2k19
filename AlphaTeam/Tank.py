@@ -4,13 +4,11 @@ from Utils import *
 class Tank:
 
     target = (0,0)
-    snitch_present = 0
-    busy = False
     nearestHPack = (0, 0)
     nearestAPack = (0, 0)
     ammo = 10
     health = 5
-    nearest_enemy = 0
+    nearest_enemy = None
     pos = (0,0)
 
     STATES = ['PATROL','ATTACK', 'GOHEALTH','GOAMMO', 'BANK']  # fill this in as i figure out required states
@@ -35,6 +33,8 @@ class Tank:
             ServerMessageTypes.CREATETANK, {'Name': self.name})
 
     def evalChance(self, player, enemy):
+        # TODO: Remove
+        return False
         myHealth = player["Health"]
         enemyHealth = enemy["Health"]
 
@@ -55,16 +55,6 @@ class Tank:
             self.target = (0, 100)
         self.turnTo(self.target)
 
-    def updateNearestEnemy(self, data):
-        if self.nearest_enemy != 0:
-            player = self.pos
-            currEnemy = (self.nearest_enemy["X"], self.nearest_enemy["Y"])
-            newEnemy = (data["X"], data["Y"])
-            if getDistance(player, currEnemy) > getDistance(player, newEnemy):
-                self.nearest_enemy = data
-        else:
-            self.nearest_enemy = data
-
     #turns bot to point towards x,y
     def turnTo(self, point):
 
@@ -73,44 +63,36 @@ class Tank:
                 'Amount': getAng(self.pos, point)
             })
 
-    #will select the target
-    def selectTarget(self):
-        if self.ammo < 4 and self.health > 1 and len(self.nearestAPack) > 0:
-            self.target = self.nearestAPack
-        elif self.nearest_enemy != 0 and self.evalChance({"Health": self.health, "Ammo": self.ammo}, self.nearest_enemy):
-            self.target = (self.nearest_enemy['X'], self.nearest_enemy['Y'])
-        elif len(self.nearestHPack) > 0:
-            self.target = self.nearestHPack
-
-    # bank = true when called by bank state update
-    def setState(self, state, bank=False):
-        if not bank:
-            if state not in self.STATES:
-                return
-            else:
-                print("Transition: {} => {}".format{self.state, state})
-                self.state = state
+    def setState(self, state):
+        if state not in self.STATES:
+            print("{} not in states".format(state))
+        else:
+            print("{}".format(self.name))
+            print("Transition: {} => {}".format(self.state, state))
+            self.state = state
 
     def patrol(self):
-        pass
+        self.turnTo((0,0))
 
     def attack(self):
-        pass
+        ## TODO: Get nearest enemy location from team data, if none change back to patrol
+        self.target = (self.nearest_enemy['X'], self.nearest_enemy['Y'])
+        self.shoot()
+
 
     def goHealth(self):
+        # TODO: Get nearest health pack from team data
         self.target = self.nearestHPack
         self.turnTo(self.target)
 
     def goAmmo(self):
+        # TODO: Get nearest ammo pack from team data
         self.target = self.nearestAPack
         self.turnTo(self.target)
 
     def bank(self):
-        # Lock this state
-        #TODO: Go to closest goal
-        self.turnTo((0, 100))
-        self.target = (0,0)
-        #If we are killed or score go to patrol
+        #TODO:Lock this state
+        self.goGoals()
 
     def shoot(self):
         self.GameServer.sendMessage(ServerMessageTypes.FIRE)
@@ -124,23 +106,26 @@ class Tank:
             if messagePayload['Id'] == self.AlphaID:
                 self.setState("BANK")
             else:
+                self.setState("ATTACK")
+                # TODO: Implement this
                 # if not friendly
                 #       Attack payload id
                 # else
                 #       Defend teammate with snitch (Low priority)
-                continue
-                
+
         if messageType == ServerMessageTypes.KILL:
             self.setState("BANK")
-        elif messageType == ServerMessageTypes.HEALTHPICKUP or messageType == ServerMessageTypes.AMMOPICKUP:
-            self.setState("PATROL")
+        elif messageType == ServerMessageTypes.HEALTHPICKUP \
+            or messageType == ServerMessageTypes.AMMOPICKUP \
+            or messageType == ServerMessageTypes.ENTEREDGOAL \
+            or messageType == ServerMessageTypes.DESTROYED:
+                self.setState("PATROL")
 
         #if recieving an object update
         if messageType == ServerMessageTypes.OBJECTUPDATE:
-
             #if data is about the tank
-            if messagePayload["name"] = self.name:    
-                
+            if messagePayload["Name"] == self.name:
+
                 #update the class attributes
                 self.AlphaID = messagePayload["Id"]
                 self.pos = (messagePayload["X"], messagePayload["Y"])
@@ -148,33 +133,22 @@ class Tank:
                 self.health = messagePayload["Health"]
 
                 #transition to health/ammo states if either are low
-                if self.health <= 2:
-                    self.setState("GOHEALTH")
-                if self.ammo <= 2:
+                if self.ammo < 4 and self.health > 1:
                     self.setState("GOAMMO")
+                elif self.nearest_enemy != 0 and self.evalChance({"Health": self.health, "Ammo": self.ammo}, self.nearest_enemy):
+                    self.setState("ATTACK")
+                elif self.health == 1:
+                    self.setState("GOHEALTH")
 
-        return messagePayload
+            return messagePayload
+        else:
+            return None
 
     def update(self):
         self.GameServer.sendMessage(ServerMessageTypes.TOGGLEFORWARD)
 
-        if data and len(data) > 1:
-            if :
-
-                if(self.pos[1] > 100 or self.pos[1] < -100):
-                    self.setState('PATROL')
-
-                if len(data) == 1 and data["Id"] == self.AlphaID:
-                    
+        if(self.pos[1] > 100 or self.pos[1] < -100):
+            self.setState('PATROL')
 
         behaviour = self.behaviours[self.state]
         behaviour()
-
-        if self.state == 'BANK':
-            self.turnTo((0,100))
-            self.goGoals()
-        else:
-            self.selectTarget()
-
-            self.turnTo(self.target)
-            self.shoot()
