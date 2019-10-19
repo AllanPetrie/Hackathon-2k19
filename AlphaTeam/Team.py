@@ -52,8 +52,8 @@ class Team:
         if len(idSet) == 0:
             return None
 
-        closestEnt = self.teamKnowledge[idSet[0]]
-        closestEntCoord = (closestEnt["X"], closestEnt["Y"])
+        closestEnt = None
+        closestEntCoord = (-10000, -100000)
 
         for ID in idSet:
             # currentTime = datetime.datetime.now()
@@ -69,10 +69,10 @@ class Team:
         return closestEnt
 
     def findNearestTank(self,currentPos):
-        return findNearestFromSet(self.tankIDs, currentPos)
+        return self.findNearestFromSet(self.tankIDs, currentPos)
 
     def findNearestAmmo(self, currentPos):
-        return findNearestFromSet(self.ammoIDs, currentPos)
+        return self.findNearestFromSet(self.ammoIDs, currentPos)
 
     def findNearestHealth(self,currentPos):
-        return findNearestFromSet(self.healthIDs, currentPos)
+        return self.findNearestFromSet(self.healthIDs, currentPos)

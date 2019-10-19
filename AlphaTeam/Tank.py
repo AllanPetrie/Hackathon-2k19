@@ -76,9 +76,9 @@ class Tank:
         self.turnTo((0,0))
 
     def attack(self):
-        self.nearest_enemy = self.team.findNearestTank(self.pos)
         if self.nearest_enemy:
             self.target = (self.nearest_enemy['X'], self.nearest_enemy['Y'])
+            self.turnTo(self.target)
             self.shoot()
         else:
             self.setState("PATROL")
@@ -96,7 +96,7 @@ class Tank:
     def goAmmo(self):
         apack = self.team.findNearestAmmo(self.pos)
         if apack:
-            self.nearestAPack = (hpack["X"],hpack["Y"])
+            self.nearestAPack = (apack["X"],apack["Y"])
             self.target = self.nearestAPack
             self.turnTo(self.target)
         else:
@@ -133,6 +133,7 @@ class Tank:
             or messageType == ServerMessageTypes.DESTROYED:
                 self.setState("PATROL")
 
+        self.nearest_enemy = self.team.findNearestTank(self.pos)
         #if recieving an object update
         if messageType == ServerMessageTypes.OBJECTUPDATE:
             #if data is about the tank
@@ -143,6 +144,7 @@ class Tank:
                 self.pos = (messagePayload["X"], messagePayload["Y"])
                 self.ammo = messagePayload["Ammo"]
                 self.health = messagePayload["Health"]
+
 
                 #transition to health/ammo states if either are low
                 if self.ammo < 4 and self.health > 1:
