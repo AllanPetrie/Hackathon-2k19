@@ -38,11 +38,11 @@ class Tank:
             return(True)
 
     def goGoals(self):
-        self.target[0] = 0
         if getDistance(self.pos, p2=(0, 100)) > 122:
-            self.target[1] = -100
+            self.target = (0, -100)
         else:
-            self.target[1] = 100
+            self.target[1] = (0, 100)
+        self.turnTo(target)
 
     #turns bot to point towards x,y
     def turnTo(self, point):
@@ -50,6 +50,16 @@ class Tank:
             {
                 'Amount': getAng(self.pos, point)
             })
+
+    #will select the target
+    def selectTarget(self):
+        if self.ammo < 4 and self.health > 1 and len(self.nearestAPack) > 0:
+            self.target = self.nearestAPack
+        elif self.nearest_enemy != 0 and self.evalChance({"Health": self.health, "Ammo": self.ammo}, self.nearest_enemy):
+            self.target = self.nearest_enemy
+        elif len(self.nearestHPack) > 0:
+            self.target = self.nearestHPack
+
  
     def update(self):
         data = self.GameServer.readMessage()
@@ -72,8 +82,8 @@ class Tank:
                     self.bank = True
                     self.nearest_enemy["Health"] = 5
 
-            if data["Type"] == "Tank" and not(data["Name"] == self.name):
-                if not((self.nearest_enemy) == 0):
+            if data["Type"] == "Tank" and data["Name"] != self.name:
+                if self.nearest_enemy != 0:
                     p1 = self.pos
 
                     enemy = self.nearest_enemy
@@ -93,16 +103,12 @@ class Tank:
                 if data["Type"] == "HealthPickup":
                     self.nearestHPack = (data["X"], data["Y"])
 
+        #if we have points to cash in, go to the goals, if not select a target
         if self.bank == True:
-            self.turnTo(0,100)
             self.goGoals()
         else:
-            if self.ammo < 4 and self.health > 1 and len(self.nearestAPack) > 0:
-                self.target = self.nearestAPack
-            elif not(self.nearest_enemy == 0) and self.evalChance({"Health": self.health, "Ammo": self.ammo}, self.nearest_enemy):
-                self.target = self.nearest_enemy
-            elif len(self.nearestHPack) > 0:
-                self.target = self.nearestHPack
+            self.selectTarget()
+
         print(self.target)
 
         self.turnTo(self.target)
