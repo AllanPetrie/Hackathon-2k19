@@ -14,7 +14,7 @@ class Tank:
     STATES = ['PATROL','ATTACK', 'GOHEALTH','GOAMMO', 'BANK']  # fill this in as i figure out required states
     state = 'PATROL'
 
-    def __init__(self, ServerDeetz, Team, Name):
+    def __init__(self, ServerDeetz, ourTeam, Name):
 
         self.behaviours = {
             "PATROL": self.patrol,
@@ -24,7 +24,8 @@ class Tank:
             "BANK": self.bank
         }
 
-        self.name = Team + ":" + Name
+        self.name = ourTeam.getName() + ":" + Name
+        self.team = ourTeam
         self.GameServer = ServerComms(ServerDeetz.hostname, ServerDeetz.port)
 
         # Spawn our tank with starting state
@@ -33,20 +34,20 @@ class Tank:
             ServerMessageTypes.CREATETANK, {'Name': self.name})
 
     def evalChance(self, player, enemy):
-        # TODO: Remove
-        return False
+        if enemy == None:
+            return False
+
         myHealth = player["Health"]
         enemyHealth = enemy["Health"]
-
         myAmmo = player["Ammo"]
         enemyAmmo = enemy["Ammo"]
 
         if myAmmo < enemyHealth:
-            return(False)
+            return False
         elif myHealth < enemyAmmo and myHealth == 1 and enemyHealth > 1:
-            return(False)
+            return False
         else:
-            return(True)
+            return True
 
     def goGoals(self):
         if getDistance(self.pos, p2=(0, 100)) > 122:
@@ -75,20 +76,31 @@ class Tank:
         self.turnTo((0,0))
 
     def attack(self):
-        ## TODO: Get nearest enemy location from team data, if none change back to patrol
-        self.target = (self.nearest_enemy['X'], self.nearest_enemy['Y'])
-        self.shoot()
+        self.nearest_enemy = self.team.findNearestTank(self.pos)
+        if self.nearest_enemy:
+            self.target = (self.nearest_enemy['X'], self.nearest_enemy['Y'])
+            self.shoot()
+        else:
+            self.setState("PATROL")
 
 
     def goHealth(self):
-        # TODO: Get nearest health pack from team data
-        self.target = self.nearestHPack
-        self.turnTo(self.target)
+        hpack = self.team.findNearestHealth(self.pos)
+        if hpack:
+            self.nearestHPack = (hpack["X"],hpack["Y"])
+            self.target = self.nearestHPack
+            self.turnTo(self.target)
+        else:
+            self.setState("PATROL")
 
     def goAmmo(self):
-        # TODO: Get nearest ammo pack from team data
-        self.target = self.nearestAPack
-        self.turnTo(self.target)
+        apack = self.team.findNearestAmmo(self.pos)
+        if apack:
+            self.nearestAPack = (hpack["X"],hpack["Y"])
+            self.target = self.nearestAPack
+            self.turnTo(self.target)
+        else:
+            self.setState("PATROL")
 
     def bank(self):
         #TODO:Lock this state
