@@ -28,7 +28,6 @@ class Tank:
         }
 
         self.name = Team + ":" + Name
-        self.state = 'IDLE'
         self.GameServer = ServerComms(ServerDeetz.hostname, ServerDeetz.port)
 
         # Spawn our tank with starting state
@@ -54,7 +53,8 @@ class Tank:
         self.GameServer.sendMessage(ServerMessageTypes.FIRE)
 
     def getInfo(self):
-        return self.GameServer.readMessage()
+        messageType, messagePayload = self.GameServer.readMessage()
+        return messagePayload
 
     def goGoals(self):
         if getDistance(self.pos, p2=(0, 100)) > 122:
