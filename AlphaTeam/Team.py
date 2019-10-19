@@ -1,7 +1,7 @@
 from Tank import *
 
 class Team:
-	
+
 	tanks = []
 
 	def __init__(self, servDeetz, teamName, tankNames):
@@ -11,6 +11,3 @@ class Team:
 	def update(self):
 		for tank in self.tanks:
 			tank.update()
-	
-
-
