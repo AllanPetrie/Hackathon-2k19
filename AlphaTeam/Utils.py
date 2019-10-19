@@ -10,4 +10,3 @@ def getAng(p1,p2):
         t1 = t1*(180/math.pi)
         t1 = (t1-360)%360
         return(360-t1)
-

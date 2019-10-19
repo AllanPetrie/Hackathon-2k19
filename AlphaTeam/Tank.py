@@ -126,11 +126,6 @@ class Tank:
                 if(self.pos[1] > 100 or self.pos[1] < -100):
                     self.setState('PATROL')
 
-                if len(data) == 1 and data["Id"] == self.AlphaID:
-                    self.turnTo((0, 100))
-                    self.target = (0,0)
-
-
                 if self.nearest_enemy != 0 and self.nearest_enemy["Health"] == 0:
                     self.setState('BANK')
                     self.nearest_enemy["Health"] = 5
@@ -142,11 +137,15 @@ class Tank:
             if data["Type"] == "HealthPickup":
                 self.nearestHPack = (data["X"], data["Y"])
 
+        if len(data) == 1 and data["Id"] == self.AlphaID:
+            self.turnTo((0, 100))
+            self.target = (0,0)
+
         if self.state == 'BANK':
             self.turnTo((0,100))
             self.goGoals()
         else:
             self.selectTarget()
 
-            self.turnTo(self.target)
-            self.shoot()
+        self.turnTo(self.target)
+        self.shoot()
