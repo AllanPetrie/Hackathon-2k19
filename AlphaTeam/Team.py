@@ -15,7 +15,10 @@ class Team:
     def __init__(self, servDeetz, teamName, tankNames):
         self.teamName = teamName
         for tankName in tankNames:
-            self.tanks.append(Tank(servDeetz, teamName, tankName))
+            self.tanks.append(Tank(servDeetz, self, tankName))
+
+    def getName():
+        return self.teamName
 
     def update(self):
         for tank in self.tanks:
