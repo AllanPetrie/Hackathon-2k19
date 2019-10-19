@@ -16,21 +16,27 @@ from Team import *
 
 # Parse command line args
 parser = argparse.ArgumentParser()
-parser.add_argument('-d', '--debug', action='store_true', help='Enable debug output')
-parser.add_argument('-H', '--hostname', default='0.0.0.0', help='Hostname to connect to')
-parser.add_argument('-p', '--port', default=8052, type=int, help='Port to connect to')
-parser.add_argument('-n', '--name', default='AlphaTeam:HIVEbot', help='Name of bot')
+parser.add_argument('-d', '--debug', action='store_true',
+                    help='Enable debug output')
+parser.add_argument('-H', '--hostname', default='0.0.0.0',
+                    help='Hostname to connect to')
+parser.add_argument('-p', '--port', default=8052,
+                    type=int, help='Port to connect to')
+parser.add_argument(
+    '-n', '--name', default='AlphaTeam:HIVEbot', help='Name of bot')
 args = parser.parse_args()
 
 # Set up console logging
 if args.debug:
-        logging.basicConfig(format='[%(asctime)s] %(message)s', level=logging.DEBUG)
+    logging.basicConfig(
+        format='[%(asctime)s] %(message)s', level=logging.DEBUG)
 else:
-	logging.basicConfig(format='[%(asctime)s] %(message)s', level=logging.INFO)
+    logging.basicConfig(format='[%(asctime)s] %(message)s', level=logging.INFO)
 
 ServerDeetz = GameServerDetails(args.hostname, args.port)
 
 team = Team(ServerDeetz, "Alpha", ["Cheeky", "Absolute", "Gary", "Fish"])
 
 while True:
-	team.update()
+    team.getTeamKnowledge()
+    team.update()
