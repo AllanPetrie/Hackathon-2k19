@@ -24,6 +24,8 @@ parser.add_argument('-p', '--port', default=8052,
                     type=int, help='Port to connect to')
 parser.add_argument(
     '-n', '--name', default='AlphaTeam:HIVEbot', help='Name of bot')
+parser.add_argument(
+    '-b', '--beta', action='store_true', help='Spawn enemy team')
 args = parser.parse_args()
 
 # Set up console logging
@@ -36,7 +38,11 @@ else:
 ServerDeetz = GameServerDetails(args.hostname, args.port)
 
 team = Team(ServerDeetz, "Alpha", ["Cheeky", "Absolute", "Gary", "Fish"])
+betaTeam = Team(ServerDeetz, "Beta", ["A", "B", "C", "D"])
 
 while True:
     team.getTeamKnowledge()
     team.update()
+    if args.beta:
+        betaTeam.getTeamKnowledge()
+        betaTeam.update()
