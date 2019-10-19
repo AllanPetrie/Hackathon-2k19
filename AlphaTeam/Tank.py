@@ -17,6 +17,14 @@ class Tank:
     STATES = ['PATROL','ATTACK', 'GOHEALTH','GOAMMO', 'BANK']  # fill this in as i figure out required states
     state = 'PATROL'
 
+    behaviours = {
+        "PATROL": self.patrol(),
+        "ATTACK": self.attack(),
+        "GOHEALTH": self.goHealth(),
+        "GOAMMO": self.goAmmo(),
+        "BANK": self.bank()
+    }
+
     def __init__(self, ServerDeetz, Team, Name):
         self.name = Team + ":" + Name
         self.state = 'IDLE'
@@ -95,6 +103,24 @@ class Tank:
         else:
             self.state = state
 
+<<<<<<< HEAD
+=======
+    def patrol():
+        pass
+
+    def attack():
+        pass
+
+    def goHealth():
+        pass
+
+    def goAmmo():
+        pass
+
+    def bank():
+        pass
+ 
+>>>>>>> 2765d5587f3ecf4a49d3b636e114ea46f00e73d1
     def update(self):
         data = self.getInfo()
         self.GameServer.sendMessage(ServerMessageTypes.TOGGLEFORWARD)
