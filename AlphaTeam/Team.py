@@ -46,29 +46,31 @@ class Team:
                 #logging.info(self.entityTypes)
 
 
-    def findNearestTank(self,x,y):
-        tankIDs = []
-        currestPos = (x,y)
-        closestTank = self.teamKnowledge[0]
+    def findNearestFromSet(self, idSet, currentPos):
+        if len(idSet) == 0:
+            return None
 
-        for entry in self.teamKnowledge:
-            closestTankCoord = (closestTank["X"], closestTank["Y"])
+        closestEnt = self.teamKnowledge[idSet[0]]
+        closestEntCoord = (closestEnt["X"], closestEnt["Y"])
+
+        for ID in idSet:
             # currentTime = datetime.datetime.now()
             # if currentTime - entry["time"] > 5:
             #     del self.teamKnowledge[entry]
+            entry = self.teamKnowledge[ID]
+            currentEnt = (entry["X"], entry["Y"])
+            if getDistance(currentPos, currentEnt) < getDistance(currentPos, closestEntCoord):
+                closestEntCoord = currentEnt
+                closestEnt = entry
 
-            if entry["Id"] in tankIDs:
-                currentTank = (entry["X"], entry["Y"])
-                if getDistance(currentPos, currentTank) < getDistance(currentPos, closestTankCoord):
-                    closestTank = entry
+        print(closestEnt)
+        return closestEnt
 
-        print(closestTank)
-        return closestTank
+    def findNearestTank(self,currentPos):
+        return findNearestFromSet(self.tankIDs, currentPos)
 
-    def findNearestAmmo(x,y):
-        return closestAmmo
+    def findNearestAmmo(self, currentPos):
+        return findNearestFromSet(self.ammoIDs, currentPos)
 
-
-    def findNearestHealth(x,y):
-        return closestHealth
-
+    def findNearestHealth(self,currentPos):
+        return findNearestFromSet(self.healthIDs, currentPos)
