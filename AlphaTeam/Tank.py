@@ -103,8 +103,6 @@ class Tank:
         else:
             self.state = state
 
-<<<<<<< HEAD
-=======
     def patrol():
         pass
 
@@ -119,8 +117,7 @@ class Tank:
 
     def bank():
         pass
- 
->>>>>>> 2765d5587f3ecf4a49d3b636e114ea46f00e73d1
+
     def update(self):
         data = self.getInfo()
         self.GameServer.sendMessage(ServerMessageTypes.TOGGLEFORWARD)
