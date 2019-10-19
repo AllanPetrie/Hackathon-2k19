@@ -142,6 +142,9 @@ class Tank:
             if data["Type"] == "HealthPickup":
                 self.nearestHPack = (data["X"], data["Y"])
 
+        behaviour = self.behaviours[self.state]
+        behaviour()
+
         if self.state == 'BANK':
             self.turnTo((0,100))
             self.goGoals()
