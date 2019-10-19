@@ -17,8 +17,8 @@ class Tank:
     STATES = ['PATROL','ATTACK', 'GOHEALTH','GOAMMO', 'BANK']  # fill this in as i figure out required states
     state = 'PATROL'
 
-    def __init__(self, ServerDeetz, Team, Name):
-        self.name = Team + ":" + Name
+    def __init__(self, ServerDeetz, TeamName, Name):
+        self.name = TeamName + ":" + Name
         self.state = 'IDLE'
         self.GameServer = ServerComms(ServerDeetz.hostname, ServerDeetz.port)
 
@@ -26,6 +26,9 @@ class Tank:
         # logging.info("Creating tank with name '{}'".format(args.name))
         self.GameServer.sendMessage(
             ServerMessageTypes.CREATETANK, {'Name': self.name})
+
+    def getName(self):
+        return self.name
 
     def evalChance(self, player, enemy):
         myHealth = player["Health"]
