@@ -34,6 +34,12 @@ class Tank:
         else:
             return(True)
 
+    def shoot(self):
+        self.GameServer.sendMessage(ServerMessageTypes.FIRE)
+
+    def getInfo(self):
+        return self.GameServer.readMessage()
+
     def goGoals(self):
         self.turnTo(0,100)
         self.target[0] = 0
@@ -59,7 +65,6 @@ class Tank:
             self.target = self.nearest_enemy
         elif len(self.nearestHPack) > 0:
             self.target = self.nearestHPack
-        print(self.target)
     #pickTarget
     #shoot at
     #follow snitch
@@ -71,7 +76,7 @@ class Tank:
             })
 
     def update(self):
-        data = self.GameServer.readMessage()
+        data = self.getInfo()
         self.GameServer.sendMessage(ServerMessageTypes.TOGGLEFORWARD)
 
         if data and len(data) > 1 and data["Name"] == self.name:
@@ -105,4 +110,4 @@ class Tank:
             self.pickTarget()
 
         self.turnTo(self.target)
-        self.GameServer.sendMessage(ServerMessageTypes.FIRE)
+        self.shoot()
