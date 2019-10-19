@@ -20,5 +20,4 @@ class Team:
             currentData = tank.getInfo()
             if currentData and len(currentData) > 1:
                 self.teamKnowledge[currentData["Id"]] = currentData
-                logging.info(self.teamKnowledge)
-
+                #logging.info(self.teamKnowledge)

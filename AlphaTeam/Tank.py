@@ -62,12 +62,10 @@ class Tank:
         if self.ammo < 4 and self.health > 1 and len(self.nearestAPack) > 0:
             self.target = self.nearestAPack
         elif self.nearest_enemy != 0 and self.evalChance({"Health": self.health, "Ammo": self.ammo}, self.nearest_enemy):
-            self.target = self.nearest_enemy
+            self.target = (self.nearest_enemy['X'], self.nearest_enemy['Y'])
         elif len(self.nearestHPack) > 0:
             self.target = self.nearestHPack
-    #pickTarget
-    #shoot at
-    #follow snitch
+
     #turns bot to point towards x,y
     def turnTo(self, point):
         self.GameServer.sendMessage(ServerMessageTypes.TURNTOHEADING,
@@ -79,35 +77,38 @@ class Tank:
         data = self.getInfo()
         self.GameServer.sendMessage(ServerMessageTypes.TOGGLEFORWARD)
 
-        if data and len(data) > 1 and data["Name"] == self.name:
-            self.AlphaID = data["Id"]
-            self.pos = (data["X"], data["Y"])
-            self.ammo = data["Ammo"]
-            self.health = data["Health"]
+        if data:
+            if len(data) > 1 and data["Name"] == self.name:
 
-            if self.pos[1] > 100 or self.pos[1] < -100:
-                self.bank = False
+                self.AlphaID = data["Id"]
+                self.pos = (data["X"], data["Y"])
+                self.ammo = data["Ammo"]
+                self.health = data["Health"]
 
-            if len(data) == 1 and data["Id"] == self.AlphaID:
-                self.turnTo((0, 100))
-                self.target = (0,0)
+                if self.pos[1] > 100 or self.pos[1] < -100:
+                    self.bank = False
 
-                if self.nearest_enemy != 0 and self.nearest_enemy["Health"] == 0:
-                    self.bank = True
-                    self.nearest_enemy["Health"] = 5
+                if len(data) == 1 and data["Id"] == self.AlphaID:
+                    self.turnTo((0, 100))
+                    self.target = (0,0)
 
-            if data["Type"] == "Tank" and data["Name"] != self.name:
+                    if self.nearest_enemy != 0 and self.nearest_enemy["Health"] == 0:
+                        self.bank = True
+                        self.nearest_enemy["Health"] = 5
+
+            if data["Type"] == "Tank" and not(data["Name"].startswith('Alpha:')):
                 self.updateNearestEnemy(data)
 
-                if data["Type"] == "AmmoPickup":
-                    self.nearestAPack = (data["X"], data["Y"])
-                if data["Type"] == "HealthPickup":
-                    self.nearestHPack = (data["X"], data["Y"])
+            if data["Type"] == "AmmoPickup":
+                self.nearestAPack = (data["X"], data["Y"])
 
-        if self.bank == True:
-            self.goGoals()
-        else:
-            self.pickTarget()
+            if data["Type"] == "HealthPickup":
+                self.nearestHPack = (data["X"], data["Y"])
 
-        self.turnTo(self.target)
-        self.shoot()
+            if self.bank == True:
+                self.goGoals()
+            else:
+                self.pickTarget()
+
+            self.turnTo(self.target)
+            self.shoot()
