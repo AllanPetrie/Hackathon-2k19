@@ -21,13 +21,10 @@ class Tank:
         self.name = Team + ":" + Name
         self.state = 'IDLE'
         self.GameServer = ServerComms(ServerDeetz.hostname, ServerDeetz.port)
-<<<<<<< Updated upstream
-        self.GameServer.sendMessage(
-=======
+
         # Spawn our tank with starting state
         # logging.info("Creating tank with name '{}'".format(args.name))
-        self.GameServer.sendMessagei(
->>>>>>> Stashed changes
+        self.GameServer.sendMessage(
             ServerMessageTypes.CREATETANK, {'Name': self.name})
 
     def evalChance(self, player, enemy):
@@ -108,7 +105,7 @@ class Tank:
                 self.turnTo((0, 100))
                 self.target = (0,0)
 
-               if not(self.nearest_enemy == 0) and self.nearest_enemy["Health"] == 0:
+                if not(self.nearest_enemy == 0) and self.nearest_enemy["Health"] == 0:
                     print("HERERERERERERERERERRERERERERERERERER")
                     self.setState('BANK')
                     self.nearest_enemy["Health"] = 5
