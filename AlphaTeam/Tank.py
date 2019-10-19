@@ -14,9 +14,16 @@ class Tank:
     nearest_enemy = 0
     pos = (0,0)
 
+    STATES = ['PATROL','ATTACK', 'GOHEALTH','GOAMMO', 'BANK']  # fill this in as i figure out required states
+    state = 'PATROL'
+
     def __init__(self, ServerDeetz, Team, Name):
         self.name = Team + ":" + Name
+        self.state = 'IDLE'
         self.GameServer = ServerComms(ServerDeetz.hostname, ServerDeetz.port)
+
+        # Spawn our tank with starting state
+        # logging.info("Creating tank with name '{}'".format(args.name))
         self.GameServer.sendMessage(
             ServerMessageTypes.CREATETANK, {'Name': self.name})
 
@@ -73,6 +80,12 @@ class Tank:
                 'Amount': getAng(self.pos, point)
             })
 
+    def setState(self, state):
+        if state not in self.STATES:
+            return
+        else:
+            self.state = state
+
     def update(self):
         data = self.getInfo()
         self.GameServer.sendMessage(ServerMessageTypes.TOGGLEFORWARD)
@@ -85,16 +98,17 @@ class Tank:
                 self.ammo = data["Ammo"]
                 self.health = data["Health"]
 
-                if self.pos[1] > 100 or self.pos[1] < -100:
-                    self.bank = False
+                if(self.pos[1] > 100 or self.pos[1] < -100):
+                    self.setState('PATROL')
 
                 if len(data) == 1 and data["Id"] == self.AlphaID:
                     self.turnTo((0, 100))
                     self.target = (0,0)
 
-                    if self.nearest_enemy != 0 and self.nearest_enemy["Health"] == 0:
-                        self.bank = True
-                        self.nearest_enemy["Health"] = 5
+
+                if self.nearest_enemy != 0 and self.nearest_enemy["Health"] == 0:
+                    self.setState('BANK')
+                    self.nearest_enemy["Health"] = 5
 
             if data["Type"] == "Tank" and not(data["Name"].startswith('Alpha:')):
                 self.updateNearestEnemy(data)
@@ -105,10 +119,11 @@ class Tank:
             if data["Type"] == "HealthPickup":
                 self.nearestHPack = (data["X"], data["Y"])
 
-            if self.bank == True:
+            if self.state == 'BANK':
                 self.goGoals()
             else:
                 self.pickTarget()
+
 
             self.turnTo(self.target)
             self.shoot()
