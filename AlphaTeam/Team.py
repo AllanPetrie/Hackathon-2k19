@@ -7,7 +7,10 @@ class Team:
 
     tanks = []
     teamKnowledge = {}
-    entityTypes = {}
+    ammoIDs = set()
+    tankIDs = set()
+    healthIDs = set()
+    snitchIDs = set()
 
     def __init__(self, servDeetz, teamName, tankNames):
         self.teamName = teamName
@@ -30,7 +33,14 @@ class Team:
                 self.teamKnowledge[currentData["Id"]] = currentData
 
                 if self.teamName not in currentData["Name"]:
-                    self.entityTypes[currentData["Id"]] = currentData["Type"]
+                    if currentData["Type"] == "Tank":
+                        tankIDs.add(currentData["Id"])
+                    elif currentData["Type"] == "AmmoPickup":
+                        ammoIDs.add(currentData["Id"])
+                    elif currentData["Type"] == "HealthPickup":
+                        healthIDs.add(currentData["Id"])
+                    elif currentData["Type"] == "Snitch":
+                        snitchIDs.add(currentData["Id"])
 
                 #logging.info(self.teamKnowledge)
                 #logging.info(self.entityTypes)
@@ -40,9 +50,6 @@ class Team:
         tankIDs = []
         currestPos = (x,y)
         closestTank = self.teamKnowledge[0]
-        for entity in self.entityTypes:
-            if entity[value] == "Tank":
-                tankIDs.append(entity[key])
 
         for entry in self.teamKnowledge:
             closestTankCoord = (closestTank["X"], closestTank["Y"])
