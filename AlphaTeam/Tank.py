@@ -17,15 +17,16 @@ class Tank:
     STATES = ['PATROL','ATTACK', 'GOHEALTH','GOAMMO', 'BANK']  # fill this in as i figure out required states
     state = 'PATROL'
 
-    behaviours = {
-        "PATROL": self.patrol(),
-        "ATTACK": self.attack(),
-        "GOHEALTH": self.goHealth(),
-        "GOAMMO": self.goAmmo(),
-        "BANK": self.bank()
-    }
-
     def __init__(self, ServerDeetz, Team, Name):
+
+        self.behaviours = {
+            "PATROL": self.patrol,
+            "ATTACK": self.attack,
+            "GOHEALTH": self.goHealth,
+            "GOAMMO": self.goAmmo,
+            "BANK": self.bank
+        }
+
         self.name = Team + ":" + Name
         self.state = 'IDLE'
         self.GameServer = ServerComms(ServerDeetz.hostname, ServerDeetz.port)
@@ -59,8 +60,8 @@ class Tank:
         if getDistance(self.pos, p2=(0, 100)) > 122:
             self.target = (0, -100)
         else:
-            self.target[1] = (0, 100)
-        self.turnTo(target)
+            self.target = (0, 100)
+        self.turnTo(self.target)
 
     def updateNearestEnemy(self, data):
         if self.nearest_enemy != 0:
@@ -71,14 +72,6 @@ class Tank:
                 self.nearest_enemy = data
         else:
             self.nearest_enemy = data
-
-    def pickTarget(self):
-        if self.ammo < 4 and self.health > 1 and len(self.nearestAPack) > 0:
-            self.target = self.nearestAPack
-        elif self.nearest_enemy != 0 and self.evalChance({"Health": self.health, "Ammo": self.ammo}, self.nearest_enemy):
-            self.target = (self.nearest_enemy['X'], self.nearest_enemy['Y'])
-        elif len(self.nearestHPack) > 0:
-            self.target = self.nearestHPack
 
     #turns bot to point towards x,y
     def turnTo(self, point):
@@ -93,7 +86,7 @@ class Tank:
         if self.ammo < 4 and self.health > 1 and len(self.nearestAPack) > 0:
             self.target = self.nearestAPack
         elif self.nearest_enemy != 0 and self.evalChance({"Health": self.health, "Ammo": self.ammo}, self.nearest_enemy):
-            self.target = self.nearest_enemy
+            self.target = (self.nearest_enemy['X'], self.nearest_enemy['Y'])
         elif len(self.nearestHPack) > 0:
             self.target = self.nearestHPack
 
@@ -122,8 +115,8 @@ class Tank:
         data = self.getInfo()
         self.GameServer.sendMessage(ServerMessageTypes.TOGGLEFORWARD)
 
-        if data:
-            if len(data) > 1 and data["Name"] == self.name:
+        if data and len(data) > 1:
+            if data["Name"] == self.name:
 
                 self.AlphaID = data["Id"]
                 self.pos = (data["X"], data["Y"])
@@ -147,10 +140,10 @@ class Tank:
             if data["Type"] == "AmmoPickup":
                 self.nearestAPack = (data["X"], data["Y"])
             if data["Type"] == "HealthPickup":
-                self.nearestHPack = (data["X"], data["Y"]
+                self.nearestHPack = (data["X"], data["Y"])
 
         if self.state == 'BANK':
-            self.turnTo(0,100)
+            self.turnTo((0,100))
             self.goGoals()
         else:
             self.selectTarget()
