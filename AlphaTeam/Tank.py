@@ -11,6 +11,7 @@ class Tank:
     nearest_enemy = None
     pos = (0,0)
 
+    stateLock = False
     STATES = ['PATROL','ATTACK', 'GOHEALTH','GOAMMO', 'BANK']  # fill this in as i figure out required states
     state = 'PATROL'
 
@@ -65,9 +66,15 @@ class Tank:
             })
 
     def setState(self, state):
+        if self.stateLock:
+            print("{}".format(self.name))
+            print("State locked")
+            return
         if state not in self.STATES:
             print("{} not in states".format(state))
         else:
+            if state == "BANK":
+                self.stateLock = True
             print("{}".format(self.name))
             print("Transition: {} => {}".format(self.state, state))
             self.state = state
@@ -129,9 +136,11 @@ class Tank:
             self.setState("BANK")
         elif messageType == ServerMessageTypes.HEALTHPICKUP \
             or messageType == ServerMessageTypes.AMMOPICKUP \
-            or messageType == ServerMessageTypes.ENTEREDGOAL \
             or messageType == ServerMessageTypes.DESTROYED:
                 self.setState("PATROL")
+        elif messageType == ServerMessageTypes.ENTEREDGOAL:
+            self.stateLock = False
+            self.setState("PATROL")
 
         self.nearest_enemy = self.team.findNearestTank(self.pos)
         #if recieving an object update

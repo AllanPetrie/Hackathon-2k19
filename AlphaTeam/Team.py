@@ -65,7 +65,6 @@ class Team:
                 closestEntCoord = currentEnt
                 closestEnt = entry
 
-        print(closestEnt)
         return closestEnt
 
     def findNearestTank(self,currentPos):

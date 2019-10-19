@@ -38,7 +38,9 @@ else:
 ServerDeetz = GameServerDetails(args.hostname, args.port)
 
 team = Team(ServerDeetz, "Alpha", ["Cheeky", "Absolute", "Gary", "Fish"])
-betaTeam = Team(ServerDeetz, "Beta", ["A", "B", "C", "D"])
+betaTeam = None
+if args.beta:
+    betaTeam = Team(ServerDeetz, "Beta", ["A", "B", "C", "D"])
 
 while True:
     team.getTeamKnowledge()
