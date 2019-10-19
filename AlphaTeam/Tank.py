@@ -17,6 +17,14 @@ class Tank:
     STATES = ['PATROL','ATTACK', 'GOHEALTH','GOAMMO', 'BANK']  # fill this in as i figure out required states
     state = 'PATROL'
 
+    behaviours = {
+        "PATROL": self.patrol(),
+        "ATTACK": self.attack(),
+        "GOHEALTH": self.goHealth(),
+        "GOAMMO": self.goAmmo(),
+        "BANK": self.bank()
+    }
+
     def __init__(self, ServerDeetz, Team, Name):
         self.name = Team + ":" + Name
         self.state = 'IDLE'
@@ -96,6 +104,21 @@ class Tank:
             return
         else:
             self.state = state
+
+    def patrol():
+        pass
+
+    def attack():
+        pass
+
+    def goHealth():
+        pass
+
+    def goAmmo():
+        pass
+
+    def bank():
+        pass
  
     def update(self):
         data = self.getInfo()
