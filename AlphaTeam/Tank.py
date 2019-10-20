@@ -4,20 +4,18 @@ from Utils import *
 class Tank:
 
     target = (0,0)
-    snitch_present = 0
-    bank = 0
-    busy = False
     nearestHPack = (0, 0)
     nearestAPack = (0, 0)
     ammo = 10
     health = 5
-    nearest_enemy = 0
+    nearest_enemy = None
     pos = (0,0)
 
+    stateLock = False
     STATES = ['PATROL','ATTACK', 'GOHEALTH','GOAMMO', 'BANK']  # fill this in as i figure out required states
     state = 'PATROL'
 
-    def __init__(self, ServerDeetz, Team, Name):
+    def __init__(self, ServerDeetz, ourTeam, Name):
 
         self.behaviours = {
             "PATROL": self.patrol,
@@ -27,7 +25,8 @@ class Tank:
             "BANK": self.bank
         }
 
-        self.name = Team + ":" + Name
+        self.name = ourTeam.getName() + ":" + Name
+        self.team = ourTeam
         self.GameServer = ServerComms(ServerDeetz.hostname, ServerDeetz.port)
 
         # Spawn our tank with starting state
@@ -36,25 +35,20 @@ class Tank:
             ServerMessageTypes.CREATETANK, {'Name': self.name})
 
     def evalChance(self, player, enemy):
+        if enemy == None:
+            return False
+
         myHealth = player["Health"]
         enemyHealth = enemy["Health"]
-
         myAmmo = player["Ammo"]
         enemyAmmo = enemy["Ammo"]
 
         if myAmmo < enemyHealth:
-            return(False)
+            return False
         elif myHealth < enemyAmmo and myHealth == 1 and enemyHealth > 1:
-            return(False)
+            return False
         else:
-            return(True)
-
-    def shoot(self):
-        self.GameServer.sendMessage(ServerMessageTypes.FIRE)
-
-    def getInfo(self):
-        messageType, messagePayload = self.GameServer.readMessage()
-        return messagePayload
+            return True
 
     def goGoals(self):
         if getDistance(self.pos, p2=(0, 100)) > 122:
@@ -62,16 +56,6 @@ class Tank:
         else:
             self.target = (0, 100)
         self.turnTo(self.target)
-
-    def updateNearestEnemy(self, data):
-        if self.nearest_enemy != 0:
-            player = self.pos
-            currEnemy = (self.nearest_enemy["X"], self.nearest_enemy["Y"])
-            newEnemy = (data["X"], data["Y"])
-            if getDistance(player, currEnemy) > getDistance(player, newEnemy):
-                self.nearest_enemy = data
-        else:
-            self.nearest_enemy = data
 
     #turns bot to point towards x,y
     def turnTo(self, point):
@@ -81,71 +65,113 @@ class Tank:
                 'Amount': getAng(self.pos, point)
             })
 
-    #will select the target
-    def selectTarget(self):
-        if self.ammo < 4 and self.health > 1 and len(self.nearestAPack) > 0:
-            self.target = self.nearestAPack
-        elif self.nearest_enemy != 0 and self.evalChance({"Health": self.health, "Ammo": self.ammo}, self.nearest_enemy):
-            self.target = (self.nearest_enemy['X'], self.nearest_enemy['Y'])
-        elif len(self.nearestHPack) > 0:
-            self.target = self.nearestHPack
-
     def setState(self, state):
-        if state not in self.STATES:
+        if self.stateLock:
+            print("{}".format(self.name))
+            print("State locked")
             return
+        if state not in self.STATES:
+            print("{} not in states".format(state))
         else:
+            if state == "BANK":
+                self.stateLock = True
+            print("{}".format(self.name))
+            print("Transition: {} => {}".format(self.state, state))
             self.state = state
 
-    def patrol():
-        pass
+    def patrol(self):
+        self.turnTo((0,0))
 
-    def attack():
-        pass
+    def attack(self):
+        if self.nearest_enemy:
+            self.target = (self.nearest_enemy['X'], self.nearest_enemy['Y'])
+            self.turnTo(self.target)
+            self.shoot()
+        else:
+            self.setState("PATROL")
 
-    def goHealth():
-        pass
 
-    def goAmmo():
-        pass
+    def goHealth(self):
+        hpack = self.team.findNearestHealth(self.pos)
+        if hpack:
+            self.nearestHPack = (hpack["X"],hpack["Y"])
+            self.target = self.nearestHPack
+            self.turnTo(self.target)
+        else:
+            self.setState("PATROL")
 
-    def bank():
-        pass
+    def goAmmo(self):
+        apack = self.team.findNearestAmmo(self.pos)
+        if apack:
+            self.nearestAPack = (apack["X"],apack["Y"])
+            self.target = self.nearestAPack
+            self.turnTo(self.target)
+        else:
+            self.setState("PATROL")
+
+    def bank(self):
+        #TODO:Lock this state
+        self.goGoals()
+
+    def shoot(self):
+        self.GameServer.sendMessage(ServerMessageTypes.FIRE)
+
+    #NOTE: need to work out how to transition to attack state
+    def getInfo(self):
+        messageType, messagePayload = self.GameServer.readMessage()
+
+        #if we pick up snitch, ammo, health or get a kill set state accordingly
+        if messageType == ServerMessageTypes.SNITCHPICKUP:
+            if messagePayload['Id'] == self.AlphaID:
+                self.setState("BANK")
+            else:
+                self.setState("ATTACK")
+                # TODO: Implement this
+                # if not friendly
+                #       Attack payload id
+                # else
+                #       Defend teammate with snitch (Low priority)
+
+        if messageType == ServerMessageTypes.KILL:
+            self.setState("BANK")
+        elif messageType == ServerMessageTypes.HEALTHPICKUP \
+            or messageType == ServerMessageTypes.AMMOPICKUP \
+            or messageType == ServerMessageTypes.DESTROYED:
+                self.setState("PATROL")
+        elif messageType == ServerMessageTypes.ENTEREDGOAL:
+            self.stateLock = False
+            self.setState("PATROL")
+
+        self.nearest_enemy = self.team.findNearestTank(self.pos)
+        #if recieving an object update
+        if messageType == ServerMessageTypes.OBJECTUPDATE:
+            #if data is about the tank
+            if messagePayload["Name"] == self.name:
+
+                #update the class attributes
+                self.AlphaID = messagePayload["Id"]
+                self.pos = (messagePayload["X"], messagePayload["Y"])
+                self.ammo = messagePayload["Ammo"]
+                self.health = messagePayload["Health"]
+
+
+                #transition to health/ammo states if either are low
+                if self.ammo < 4 and self.health > 1:
+                    self.setState("GOAMMO")
+                elif self.nearest_enemy != 0 and self.evalChance({"Health": self.health, "Ammo": self.ammo}, self.nearest_enemy):
+                    self.setState("ATTACK")
+                elif self.health == 1:
+                    self.setState("GOHEALTH")
+
+            return messagePayload
+        else:
+            return None
 
     def update(self):
-        data = self.getInfo()
         self.GameServer.sendMessage(ServerMessageTypes.TOGGLEFORWARD)
 
-        if data and len(data) > 1:
-            if data["Name"] == self.name:
+        if(self.pos[1] > 100 or self.pos[1] < -100):
+            self.setState('PATROL')
 
-                self.AlphaID = data["Id"]
-                self.pos = (data["X"], data["Y"])
-                self.ammo = data["Ammo"]
-                self.health = data["Health"]
-
-                if(self.pos[1] > 100 or self.pos[1] < -100):
-                    self.setState('PATROL')
-
-                if self.nearest_enemy != 0 and self.nearest_enemy["Health"] == 0:
-                    self.setState('BANK')
-                    self.nearest_enemy["Health"] = 5
-
-            if data["Type"] == "Tank" and not(data["Name"].startswith('Alpha:')):
-                self.updateNearestEnemy(data)
-            if data["Type"] == "AmmoPickup":
-                self.nearestAPack = (data["X"], data["Y"])
-            if data["Type"] == "HealthPickup":
-                self.nearestHPack = (data["X"], data["Y"])
-
-        if len(data) == 1 and data["Id"] == self.AlphaID:
-            self.turnTo((0, 100))
-            self.target = (0,0)
-
-        if self.state == 'BANK':
-            self.turnTo((0,100))
-            self.goGoals()
-        else:
-            self.selectTarget()
-
-        self.turnTo(self.target)
-        self.shoot()
+        behaviour = self.behaviours[self.state]
+        behaviour()
