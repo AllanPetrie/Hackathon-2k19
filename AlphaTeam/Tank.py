@@ -56,10 +56,10 @@ class Tank:
         else:
             self.target = (0, 100)
         self.turnTo(self.target)
+        self.GameServer.sendMessage(ServerMessageTypes.TOGGLEFORWARD)
 
     #turns bot to point towards x,y
     def turnTo(self, point):
-
         self.GameServer.sendMessage(ServerMessageTypes.TURNTOHEADING,
             {
                 'Amount': getAng(self.pos, point)
@@ -80,11 +80,14 @@ class Tank:
             self.state = state
 
     def patrol(self):
+        
         self.turnTo((0,0))
+        self.GameServer.sendMessage(ServerMessageTypes.TOGGLEFORWARD)
 
     def attack(self):
         if self.nearest_enemy:
             self.target = (self.nearest_enemy['X'], self.nearest_enemy['Y'])
+            self.GameServer.sendMessage(ServerMessageTypes.STOPMOVE)
             self.turnTo(self.target)
             self.shoot()
         else:
@@ -97,6 +100,7 @@ class Tank:
             self.nearestHPack = (hpack["X"],hpack["Y"])
             self.target = self.nearestHPack
             self.turnTo(self.target)
+            self.GameServer.sendMessage(ServerMessageTypes.TOGGLEFORWARD)
         else:
             self.setState("PATROL")
 
@@ -106,6 +110,7 @@ class Tank:
             self.nearestAPack = (apack["X"],apack["Y"])
             self.target = self.nearestAPack
             self.turnTo(self.target)
+            self.GameServer.sendMessage(ServerMessageTypes.TOGGLEFORWARD)
         else:
             self.setState("PATROL")
 
@@ -168,7 +173,7 @@ class Tank:
             return None
 
     def update(self):
-        self.GameServer.sendMessage(ServerMessageTypes.TOGGLEFORWARD)
+        
 
         if(self.pos[1] > 100 or self.pos[1] < -100):
             self.setState('PATROL')
