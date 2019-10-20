@@ -91,14 +91,19 @@ class Tank:
 
 
     def snitch(self):
+        snitch = self.team.findNearestSnitch(self.pos)
+        if snitch:
+            self.snitchLocation = (snitch["X"], snitch["Y"])
         self.turnTo(self.snitchLocation)
         self.GameServer.sendMessage(ServerMessageTypes.TOGGLEFORWARD)
 
     def patrol(self):
         self.turnTo((0,0))
+        self.GameServer.sendMessage(ServerMessageTypes.TOGGLETURRETRIGHT)
         self.GameServer.sendMessage(ServerMessageTypes.TOGGLEFORWARD)
 
     def attack(self):
+        self.GameServer.sendMessage(ServerMessageTypes.STOPTURRET)
         if self.nearest_enemy:
             print("{} attack -> {}".format(self.name, self.nearest_enemy['Name']))
             self.target = (self.nearest_enemy['X'], self.nearest_enemy['Y'])
@@ -195,10 +200,7 @@ class Tank:
             return None
 
     def update(self):
-        
-
         if(self.pos[1] > 100 or self.pos[1] < -100):
             self.setState('PATROL')
-
         behaviour = self.behaviours[self.state]
         behaviour()
