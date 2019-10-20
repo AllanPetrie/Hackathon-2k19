@@ -9,6 +9,7 @@ import argparse
 import random
 import time
 import math
+from time import sleep
 
 from Server import *
 from Team import *
@@ -43,6 +44,7 @@ if args.beta:
     betaTeam = Team(ServerDeetz, "Beta", ["A", "B", "C", "D"])
 
 while True:
+    sleep(0.05)
     team.getTeamKnowledge()
     team.update()
     if args.beta:

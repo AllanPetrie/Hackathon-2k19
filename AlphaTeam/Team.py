@@ -74,3 +74,6 @@ class Team:
 
     def findNearestHealth(self,currentPos):
         return self.findNearestFromSet(self.healthIDs, currentPos)
+
+    def findNearestHealth(self,currentPos):
+        return self.findNearestFromSet(self.snitchIDs, currentPos)

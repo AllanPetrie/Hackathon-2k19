@@ -6,13 +6,14 @@ class Tank:
     target = (0,0)
     nearestHPack = (0, 0)
     nearestAPack = (0, 0)
+    snitchLocation = (0,0)
     ammo = 10
     health = 5
     nearest_enemy = None
     pos = (0,0)
 
     stateLock = False
-    STATES = ['PATROL','ATTACK', 'GOHEALTH','GOAMMO', 'BANK']  # fill this in as i figure out required states
+    STATES = ['PATROL','ATTACK', 'GOHEALTH','GOAMMO', 'BANK', 'SNITCH']  # fill this in as i figure out required states
     state = 'PATROL'
 
     def __init__(self, ServerDeetz, ourTeam, Name):
@@ -22,7 +23,8 @@ class Tank:
             "ATTACK": self.attack,
             "GOHEALTH": self.goHealth,
             "GOAMMO": self.goAmmo,
-            "BANK": self.bank
+            "BANK": self.bank,
+            "SNITCH": self.snitch
         }
 
         self.name = ourTeam.getName() + ":" + Name
@@ -81,14 +83,18 @@ class Tank:
         if state not in self.STATES:
             print("{} not in states".format(state))
         else:
-            if state == "BANK":
+            if state == "BANK" or state == "SNITCH":
                 self.stateLock = True
             print("{}".format(self.name))
             print("Transition: {} => {}".format(self.state, state))
             self.state = state
 
+
+    def snitch(self):
+        self.turnTo(self.snitchLocation)
+        self.GameServer.sendMessage(ServerMessageTypes.TOGGLEFORWARD)
+
     def patrol(self):
-        
         self.turnTo((0,0))
         self.GameServer.sendMessage(ServerMessageTypes.TOGGLEFORWARD)
 
@@ -97,9 +103,10 @@ class Tank:
             print("{} attack -> {}".format(self.name, self.nearest_enemy['Name']))
             self.target = (self.nearest_enemy['X'], self.nearest_enemy['Y'])
             self.GameServer.sendMessage(ServerMessageTypes.STOPMOVE)
-            self.turnTo(self.target)
+            self.turnTurret(self.target)
             self.shoot()
         else:
+            self.turnTo((0,0))
             self.setState("PATROL")
 
 
@@ -111,6 +118,7 @@ class Tank:
             self.turnTo(self.target)
             self.GameServer.sendMessage(ServerMessageTypes.TOGGLEFORWARD)
         else:
+            self.turnTo((0,0))
             self.setState("PATROL")
 
     def goAmmo(self):
@@ -121,6 +129,7 @@ class Tank:
             self.turnTo(self.target)
             self.GameServer.sendMessage(ServerMessageTypes.TOGGLEFORWARD)
         else:
+            self.turnTo((0,0))
             self.setState("PATROL")
 
     def bank(self):
@@ -136,6 +145,7 @@ class Tank:
 
         #if we pick up snitch, ammo, health or get a kill set state accordingly
         if messageType == ServerMessageTypes.SNITCHPICKUP:
+            self.stateLock = False
             if messagePayload['Id'] == self.AlphaID:
                 self.setState("BANK")
             else:
@@ -149,12 +159,15 @@ class Tank:
         if messageType == ServerMessageTypes.KILL:
             self.setState("BANK")
         elif messageType == ServerMessageTypes.HEALTHPICKUP \
-            or messageType == ServerMessageTypes.AMMOPICKUP \
-            or messageType == ServerMessageTypes.DESTROYED:
+            or messageType == ServerMessageTypes.AMMOPICKUP:
                 self.setState("PATROL")
-        elif messageType == ServerMessageTypes.ENTEREDGOAL:
+        elif messageType == ServerMessageTypes.ENTEREDGOAL \
+            or messageType == ServerMessageTypes.DESTROYED:
             self.stateLock = False
             self.setState("PATROL")
+
+        if messageType == ServerMessageTypes.SNITCHAPPEARED:
+            self.setState("SNITCH")
 
         self.nearest_enemy = self.team.findNearestTank(self.pos)
         #if recieving an object update
