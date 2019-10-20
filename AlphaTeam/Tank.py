@@ -45,6 +45,9 @@ class Tank:
         myAmmo = player["Ammo"]
         enemyAmmo = enemy["Ammo"]
 
+        if getDistance(self.pos, (self.nearest_enemy['X'], self.nearest_enemy['Y'])) > 50:
+            return False
+            
         if myAmmo < enemyHealth:
             return False
         elif myHealth < enemyAmmo and myHealth == 1 and enemyHealth > 1:
