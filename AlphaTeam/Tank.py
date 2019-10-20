@@ -58,6 +58,14 @@ class Tank:
         self.turnTo(self.target)
 
     #turns bot to point towards x,y
+    def turnTurret(self, point):
+
+        self.GameServer.sendMessage(ServerMessageTypes.TURNTURRETTOHEADING,
+            {
+                'Amount': getAng(self.pos, point)
+            })
+
+    #turns bot to point towards x,y
     def turnTo(self, point):
 
         self.GameServer.sendMessage(ServerMessageTypes.TURNTOHEADING,
@@ -85,7 +93,10 @@ class Tank:
     def attack(self):
         if self.nearest_enemy:
             self.target = (self.nearest_enemy['X'], self.nearest_enemy['Y'])
+            self.GameServer.sendMessage(
+                ServerMessageTypes.STOPMOVE)
             self.turnTo(self.target)
+            self.turnTurret(self.target)
             self.shoot()
         else:
             self.setState("PATROL")
