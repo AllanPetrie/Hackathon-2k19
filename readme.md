@@ -3,9 +3,9 @@
 
 Attempting tank challenge by Morgan Stanley.
 
-Authors: Matthew O'Hare, Reiss Greaves, Alexa Joyce, Scott Wilson, Allan Petrie, Martina Cocco
+Authors: Matthew O'Hare, Reiss Greaves, Scott Wilson, Allan Petrie, Martina Cocco
 
-Standing on the shoulders of: Sam George, Gregor Kerr, Matthew O'Hare, Nathan Stirling
+Standing on the shoulders of: Sam George, Gregor Kerr, Matthew O'Hare, Nathan Stirling, Alexa Joyce
 
 # OFFICIAL TANK NAMES
 
