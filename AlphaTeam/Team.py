@@ -26,8 +26,6 @@ class Team:
     def getTeamKnowledge(self):
         for tank in self.tanks:
             currentData = tank.getInfo()
-            # currentTime = time.ctime(time.time()) ## 'time': 'Sat Oct 19 15:51:23 2019'}
-            # currentTime = time.localtime(time.time()) ## 'time': time.struct_time(tm_year=2019, tm_mon=10, tm_mday=19, tm_hour=15, tm_min=48, tm_sec=32, tm_wday=5, tm_yday=292, tm_isdst=1)}}
             currentTime = datetime.datetime.now()
             if currentData:
                 currentData["Time"] = currentTime
@@ -60,7 +58,8 @@ class Team:
                 continue
 
             currentEnt = (entry["X"], entry["Y"])
-            if getDistance(currentPos, currentEnt) < getDistance(currentPos, closestEntCoord):
+            if getDistance(currentPos, currentEnt) < getDistance(currentPos, closestEntCoord) \
+                and abs(currentEnt[0]) < 70 and abs(currentEnt[1]) < 110:
                 closestEntCoord = currentEnt
                 closestEnt = entry
 

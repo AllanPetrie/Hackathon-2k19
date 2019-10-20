@@ -47,7 +47,7 @@ class Tank:
 
         if getDistance(self.pos, (self.nearest_enemy['X'], self.nearest_enemy['Y'])) > 50:
             return False
-            
+
         if myAmmo < enemyHealth:
             return False
         elif myHealth < enemyAmmo and myHealth == 1 and enemyHealth > 1:
@@ -168,6 +168,8 @@ class Tank:
             self.setState("BANK")
         elif messageType == ServerMessageTypes.HEALTHPICKUP \
             or messageType == ServerMessageTypes.AMMOPICKUP:
+                self.nearestHPack = (0, 0)
+                self.nearestAPack = (0, 0)
                 self.setState("PATROL")
         elif messageType == ServerMessageTypes.ENTEREDGOAL \
             or messageType == ServerMessageTypes.DESTROYED:
