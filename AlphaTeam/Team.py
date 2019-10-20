@@ -59,7 +59,7 @@ class Team:
 
             currentEnt = (entry["X"], entry["Y"])
             if getDistance(currentPos, currentEnt) < getDistance(currentPos, closestEntCoord) \
-                and abs(currentEnt[0]) < 70 and abs(currentEnt[1]) < 110:
+                and abs(currentEnt[0]) < 65 and abs(currentEnt[1]) < 101:
                 closestEntCoord = currentEnt
                 closestEnt = entry
 
