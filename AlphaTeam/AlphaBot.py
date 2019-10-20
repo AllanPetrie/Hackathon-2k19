@@ -23,7 +23,7 @@ parser.add_argument('-H', '--hostname', default='0.0.0.0',
 parser.add_argument('-p', '--port', default=8052,
                     type=int, help='Port to connect to')
 parser.add_argument(
-    '-n', '--name', default='AlphaTeam:HIVEbot', help='Name of bot')
+    '-n', '--name', default='AlphaTeam', help='Name of team')
 parser.add_argument(
     '-b', '--beta', action='store_true', help='Spawn enemy team')
 args = parser.parse_args()
@@ -37,7 +37,7 @@ else:
 
 ServerDeetz = GameServerDetails(args.hostname, args.port)
 
-team = Team(ServerDeetz, "Alpha", ["Cheeky", "Absolute", "Gary", "Fish"])
+team = Team(ServerDeetz, args.name, ["Cheeky", "Absolute", "Gary", "Fish"])
 betaTeam = None
 if args.beta:
     betaTeam = Team(ServerDeetz, "Beta", ["A", "B", "C", "D"])

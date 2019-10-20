@@ -2,7 +2,6 @@ from Tank import *
 import logging
 import datetime
 
-
 class Team:
 
     tanks = []
@@ -34,7 +33,7 @@ class Team:
                 currentData["Time"] = currentTime
                 self.teamKnowledge[currentData["Id"]] = currentData
 
-                if self.teamName not in currentData["Name"]:
+                if currentData["Name"].startswith(self.teamName) == False:
                     if currentData["Type"] == "Tank":
                         self.tankIDs.add(currentData["Id"])
                     elif currentData["Type"] == "AmmoPickup":
@@ -56,7 +55,6 @@ class Team:
 
         for ID in idSet:
             entry = self.teamKnowledge[ID]
-
             currentTime = datetime.datetime.now()
             if currentTime - entry["Time"] > datetime.timedelta(seconds=6):
                 continue
